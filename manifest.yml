@@ -1,0 +1,5 @@
+applications:
+- name: quick-start
+  memory: 128M
+  instances: 1
+  random-route: true
