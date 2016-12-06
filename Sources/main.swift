@@ -1,4 +1,7 @@
-struct kitura_quick_start {
+import Foundation
+import Kitura
 
-    var text = "Hello, World!"
-}
+let appRouter = AppRouter()
+    
+Kitura.addHTTPServer(onPort: 8090, with: appRouter.router)
+Kitura.run()
