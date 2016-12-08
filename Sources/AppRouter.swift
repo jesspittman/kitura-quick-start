@@ -11,7 +11,8 @@ class AppRouter {
     
     func setupRoutes() {
         router.all("/*", middleware: BodyParser())
-        router.get("/:world?") { request, response, next in
+        router.all("/(^(?!api).*$)", middleware: StaticFileServer())
+        router.get("/api/:world?") { request, response, next in
             let world = request.parameters["world"] ?? "World"
             try response.send("Hello \(world)").end()
         }
