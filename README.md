@@ -20,20 +20,24 @@ environment for Swift Packages.
 [MongoKitten](https://github.com/OpenKitten/MongoKitten) - Native MongoDB driver for Swift
 
 ## Other great packages
-[Swift-cfenv](https://github.com/IBM-Swift/Swift-cfenv) - Easy access to Cloud Foundry application 
-environment for Swift Packages. Great for projects running on Bluemix.
 [MiniPromiseKit](https://github.com/davidungar/miniPromiseKit) - A simplified promise library. 
 
 ### Adding a new package
 Adding a new package to your project is simple. Just open up the Package.swift file and add a new line
-to dependencies like:  
-`.Package(url: "https://github.com/IBM-Swift/Kitura", majorVersion: 1)`.  
+to dependencies:
+```
+dependencies: [
+    .Package(url: "https://github.com/IBM-Swift/Kitura", majorVersion: 1, minorVersion: 2),
+    .Package(url: "https://github.com/IBM-Swift/HeliumLogger", "1.1.0",
+    .Package(url: "https://github.com/OpenKitten/MongoKitten.git", majorVersion: 2),
+    .Package(url: "https://github.com/IBM-Swift/Swift-cfenv.git", majorVersion: 1)
+]
+```  
 
 * `url` is the URL to a git repository.
 * `majorVersion` is the [major version](http://semver.org/) of a git release.  
 * `minorVersion` is the minor version of the release. 
 
-You need to specify a version. 
 
 
 [Swift package manager documentation](https://swift.org/package-manager/)
