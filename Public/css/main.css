@@ -1,0 +1,17 @@
+.navbar {
+    margin-bottom: 0;
+}
+.jumbotron {
+    padding-top:30px;
+    padding-bottom:30px;
+    margin-bottom:15px;
+}
+.centered {
+    text-align:center;
+}
+tr {
+    text-align: center;
+}
+th {
+    text-align: center;
+}
