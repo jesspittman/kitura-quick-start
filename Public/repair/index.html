@@ -47,6 +47,7 @@
           <th>Last Modified</th>
         </tr>
       </table>
+      <button type="button" class="btn btn-primary" data-dismiss="modal" id="addButton" onclick="addClicked()">New Repair Order</button>
     </div> <!-- /container -->
     <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="Update Order">
       <div class="modal-dialog" role="document">
@@ -59,7 +60,7 @@
             <form>
               <div class="form-group">
                 <label for="serialInput">Serial #</label>
-                <input type="text" class="form-control" id="serialInput" placeholder="######-###">
+                <input type="text" class="form-control" id="serialInput" placeholder="########" maxlength="8">
               </div>
               <div class="checkbox">
                 <label>
@@ -105,13 +106,16 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal" id="saveButton">Save changes</button>
           </div>
         </div>
       </div>
     </div>
     <script src="/js/repair.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script>
+      getRepairs();
+    </script>   
 </body>
 </html>

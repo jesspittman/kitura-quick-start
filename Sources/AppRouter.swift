@@ -5,8 +5,10 @@ import MongoKitten
 
 class AppRouter {
     public let router = Router()
+    public var repairs: Repairs
     
     init() {
+        repairs = Repairs()        
         setupRoutes()
     }
     
@@ -17,25 +19,28 @@ class AppRouter {
             let world = request.parameters["world"] ?? "World"
             try response.send("Hello \(world)").end()
         }
-        router.get("/api/repairs") { request, response, next in 
-            let database = try Database(mongoURL: "mongodb://localhost/repairShop")
-            let repairsCollection = database["repairs"]
-            let repairs = JSON(Array(try repairsCollection.find()))
-            try response.send(json: repairs).end()
+        router.get("/api/repairs") { request, response, next in     
+            if let doc = self.repairs.getRepairs() {
+                try response.send("\(doc)").end()
+            } else {
+                try response.status(.internalServerError).end()
+            }
         }
         router.post("/api/repairs") { request, response, next in
-            let document: Document = ["serial": "100001-13A"]
-            let database = try Database(mongoURL: "mongodb://localhost/repairShop")
-            let repairsCollection = database["repairs"]
-            try repairsCollection.insert(document)
-            try response.status(.OK).send("").end();
+            if let json = request.body?.asJSON?.dictionaryObject {
+                let success = self.repairs.insertRepair(json)
+                try response.status(success ? .OK : .internalServerError).end()
+            } else {
+                try response.status(.internalServerError).end()
+            }
         }
         router.put("/api/repairs/:serial") { request, response, next in
-            let document: Document = ["serial": request.parameters["serial"]!]
-            let database = try Database(mongoURL: "mongodb://localhost/repairShop")
-            let repairsCollection = database["repairs"]
-            try repairsCollection.update(matching: "serial" == request.parameters["serial"]!, to: document)
-            try response.send("").end();
+            if let json = request.body?.asJSON?.dictionaryObject, let serial = request.parameters["serial"] {
+                let success = self.repairs.updateRepair(json, serial: serial)
+                try response.status(success ? .OK : .internalServerError).end()
+            } else {
+                try response.status(.internalServerError).end()
+            }
         }
     }
 }

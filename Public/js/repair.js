@@ -1,10 +1,11 @@
-var repairs = [];
+var count = 0;
 
 function getRepairs() {
-    var table = document.getElementById("openTable");
-    tableUpdated();
-    //GET request for open items to server.
-    //After request -> clear table -> add rows for each item.
+    $.getJSON("/api/repairs", function (repairs) { 
+        for (var i = 0; i < repairs.length; i++) {
+            addRepair(repairs[i]);
+        }
+    });
 }
 
 function addClicked() {
@@ -16,6 +17,9 @@ function addClicked() {
     var otherCheckbox = document.getElementById("otherCheckbox");
     var commentInput = document.getElementById("commentInput");
     var statusSelect = document.getElementById("statusSelect");
+    $("#updateModal").modal("show");
+    $("#updateTitle")[0].innerHTML = "New repair order";
+    $("#saveButton")[0].onclick = function() { saveClicked(); };
 
     serialInput.value = "";
     displayCheckbox.checked = false;
@@ -24,7 +28,7 @@ function addClicked() {
     connectorsCheckbox.checked = false;
     otherCheckbox.checked = false;
     commentInput.value = "";
-    statusSelect.value = "";
+    statusSelect.value = "Arrived";
 
     serialInput.disabled = false;    
     displayCheckbox.disabled = false;
@@ -35,25 +39,15 @@ function addClicked() {
     commentInput.disabled = false;
 }
 
-function addRepair(item) {
-    repairs.push(item);    
+function addRepair(repair) {
+    count++;   
     var table = document.getElementById("openTable");
     var row = table.insertRow(-1);
-    row.insertCell(-1).innerHTML = item.serial;
-    row.insertCell(-1).innerHTML = item.display ? "✔" : "";
-    row.insertCell(-1).innerHTML = item.sound ? "✔" : "";
-    row.insertCell(-1).innerHTML = item.power ? "✔" : "";
-    row.insertCell(-1).innerHTML = item.connectors ? "✔" : "";
-    row.insertCell(-1).innerHTML = item.other ? "✔" : "";
-    row.insertCell(-1).innerHTML = item.comments;
-    row.insertCell(-1).innerHTML = item.status;
-    row.insertCell(-1).innerHTML = item.added.toLocaleDateString();
-    row.insertCell(-1).innerHTML = item.updated.toLocaleDateString();
-    row.addEventListener("click", () => { rowClicked(row, item)});
-    tableUpdated();
+    updateRow(row, repair);
+    $.post("/api/repairs", repair);
 }
 
-function rowClicked(row, item) {
+function rowClicked(row, repair) {
     var serialInput = document.getElementById("serialInput");
     var displayCheckbox = document.getElementById("displayCheckbox");
     var soundCheckbox = document.getElementById("soundCheckbox");
@@ -64,15 +58,16 @@ function rowClicked(row, item) {
     var statusSelect = document.getElementById("statusSelect");
     $("#updateModal").modal("show");
     $("#updateTitle")[0].innerHTML = "Update repair order";
+    $("#saveButton")[0].onclick = function() { saveClicked(row, repair); };
 
-    serialInput.value = item.serial;
-    displayCheckbox.checked = item.display;
-    soundCheckbox.checked = item.sound;
-    powerCheckbox.checked = item.power;
-    connectorsCheckbox.checked = item.connectors;
-    otherCheckbox.checked = item.other;
-    commentInput.value = item.comments;
-    statusSelect.value = item.status;
+    serialInput.value = repair.serial;
+    displayCheckbox.checked = repair.display;
+    soundCheckbox.checked = repair.sound;
+    powerCheckbox.checked = repair.power;
+    connectorsCheckbox.checked = repair.connectors;
+    otherCheckbox.checked = repair.other;
+    commentInput.value = repair.comments;
+    statusSelect.value = repair.status;
 
     serialInput.disabled = true;    
     displayCheckbox.disabled = true;
@@ -83,7 +78,7 @@ function rowClicked(row, item) {
     commentInput.disabled = true;
 }
 
-function saveClicked(row, item) {
+function saveClicked(row, repair) {
     var serialInput = document.getElementById("serialInput");
     var displayCheckbox = document.getElementById("displayCheckbox");
     var soundCheckbox = document.getElementById("soundCheckbox");
@@ -93,7 +88,7 @@ function saveClicked(row, item) {
     var commentInput = document.getElementById("commentInput");
     var statusSelect = document.getElementById("statusSelect");
 
-    var repair = { 
+    var newRepair = { 
         "serial": serialInput.value,
         "display": displayCheckbox.checked,
         "sound": soundCheckbox.checked,
@@ -102,23 +97,46 @@ function saveClicked(row, item) {
         "other": otherCheckbox.checked,
         "comments": commentInput.value,
         "status": statusSelect.value,
-        "added": new Date(),
-        "updated": new Date()
     };
     if (row) {
-        updateRepair(row, item, repair);
+        updateRepair(row, repair, newRepair);
     } else {
-        addRepair(repair);
+        addRepair(newRepair);
     }
 }
 
-function updateRepair(row, oldItem, newItem) {
-    tableUpdated();
+function updateRepair(row, repair, newRepair) {
+    for (var v in newRepair) {
+        repair[v] = newRepair[v];
+    }
+    updateRow(row, repair);
+    $.post("/api/repairs/" + repair["serial"], repair);
 }
 
-function tableUpdated() {
+function updateRow(row, repair) {
+    if (repair.status === "Closed") {
+        row.remove();
+        count--;
+    } else {
+        row.innerHTML = "";
+        row.insertCell(-1).innerHTML = repair.serial;
+        row.insertCell(-1).innerHTML = repair.display ? "✔" : "";
+        row.insertCell(-1).innerHTML = repair.sound ? "✔" : "";
+        row.insertCell(-1).innerHTML = repair.power ? "✔" : "";
+        row.insertCell(-1).innerHTML = repair.connectors ? "✔" : "";
+        row.insertCell(-1).innerHTML = repair.other ? "✔" : "";
+        row.insertCell(-1).innerHTML = repair.comments;
+        row.insertCell(-1).innerHTML = repair.status;
+        row.insertCell(-1).innerHTML = (repair.dateAdded || new Date()).toLocaleDateString();
+        row.insertCell(-1).innerHTML = (repair.updated || new Date()).toLocaleDateString();
+        row.onclick = () => { rowClicked(row, repair)}; 
+    }
+    updateTable();    
+}
+
+function updateTable() {
     var table = document.getElementById("openTable");
-    if (repairs.length > 0) {
+    if (count > 0) {
         table.style.display = "block";
     } else {
         table.style.display = "none"; //Also show text saying no open orders.
